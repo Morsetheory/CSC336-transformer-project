@@ -1,0 +1,17 @@
+{
+  "artifacts": {
+    "config": "artifacts/experiments/tracking-smoke/config.json",
+    "loss_vs_step_svg": "artifacts/experiments/tracking-smoke/loss_vs_step.svg",
+    "loss_vs_wallclock_svg": "artifacts/experiments/tracking-smoke/loss_vs_wallclock.svg",
+    "metrics_csv": "artifacts/experiments/tracking-smoke/metrics.csv",
+    "metrics_jsonl": "artifacts/experiments/tracking-smoke/metrics.jsonl"
+  },
+  "best_val_loss": null,
+  "best_val_step": null,
+  "final_step": 0,
+  "last_train_loss": null,
+  "last_val_loss": null,
+  "num_events": 0,
+  "run_name": "tracking-smoke",
+  "status": "failed"
+}

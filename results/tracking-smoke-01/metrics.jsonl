@@ -1,0 +1,7 @@
+{"event": "metric", "loss": 6.12899923324585, "lr": 2.9999999999999997e-06, "ppl": 458.9766022384315, "split": "train", "step": 1, "step_time_seconds": 0.03165987500688061, "tokens_seen": 32, "wallclock_seconds": 0.03166129099554382}
+{"eval_time_seconds": 0.0018970000091940165, "event": "metric", "loss": 5.976917266845703, "ppl": 394.2232080756439, "split": "val", "step": 1, "tokens_seen": 32, "wallclock_seconds": 0.03388787500443868}
+{"event": "metric", "loss": 6.180001258850098, "lr": 5.999999999999999e-06, "ppl": 482.9925643676398, "split": "train", "step": 2, "step_time_seconds": 0.007032541005173698, "tokens_seen": 64, "wallclock_seconds": 0.04107704100897536}
+{"eval_time_seconds": 0.0021712500019930303, "event": "metric", "loss": 6.1822829246521, "ppl": 484.0958501704797, "split": "val", "step": 2, "tokens_seen": 64, "wallclock_seconds": 0.04347299999790266}
+{"event": "metric", "loss": 6.45638370513916, "lr": 9e-06, "ppl": 636.7541970111132, "split": "train", "step": 3, "step_time_seconds": 0.00783062499249354, "tokens_seen": 96, "wallclock_seconds": 0.051588375004939735}
+{"eval_time_seconds": 0.0018959589942824095, "event": "metric", "loss": 5.869994640350342, "ppl": 354.2470816224274, "split": "val", "step": 3, "tokens_seen": 96, "wallclock_seconds": 0.05371999999624677}
+{"checkpoint_path": "artifacts/experiments/tracking-smoke/checkpoint.pt", "event": "checkpoint", "step": 3, "wallclock_seconds": 0.08770887501304969}
