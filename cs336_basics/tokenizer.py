@@ -4,11 +4,7 @@ import json
 import pickle
 from collections.abc import Iterable, Iterator
 from pathlib import Path
-import regex as re
-
-# GPT-style pretokenization regex (tiktoken/GPT-2 style)
-PATTERN = r"""'(?:[sdmt]|ll|ve|re)| ?\p{L}+| ?\p{N}+| ?[^\s\p{L}\p{N}]+|\s+(?!\S)|\s+"""
-pretok_re = re.compile(PATTERN)
+from cs336_basics.pretokenization import iter_pretokens
 
 
 class Tokenizer:
@@ -105,33 +101,18 @@ class Tokenizer:
         return ids
 
     def encode(self, text: str) -> list[int]:
-        if self.special_tokens:
-            escaped_tokens = sorted((re.escape(s) for s in self.special_tokens), key=len, reverse=True)
-            split_re = re.compile("(" + "|".join(escaped_tokens) + ")")
-            parts = split_re.split(text)
-            special_set = set(self.special_tokens)
-        else:
-            parts = [text]
-            special_set = set()
-
-        out_ids: list[int] = []
-        for part in parts:
-            if not part:
-                continue
-            if part in special_set:
-                out_ids.append(self.byte_to_id[part.encode("utf-8")])
-                continue
-            for m in pretok_re.finditer(part):
-                out_ids.extend(self._encode_pretoken(m.group(0)))
-        return out_ids
+        return list(self.encode_iterable((text,)))
 
     def decode(self, ids: list[int]) -> str:
         token_bytes = b"".join(self.vocab[token_id] for token_id in ids)
         return token_bytes.decode("utf-8", errors="replace")
 
     def encode_iterable(self, iterable: Iterable[str]) -> Iterator[int]:
-        for chunk in iterable:
-            yield from self.encode(chunk)
+        for token, is_special in iter_pretokens(iterable, self.special_tokens):
+            if is_special:
+                yield self.byte_to_id[token.encode("utf-8")]
+            else:
+                yield from self._encode_pretoken(token)
 
 
 # Backward compatibility if older code imports lowercase class name.

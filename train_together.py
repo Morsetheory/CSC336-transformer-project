@@ -245,15 +245,15 @@ def open_memmaps(train_bin: Path, val_bin: Path) -> tuple[np.memmap, np.memmap]:
 
 
 def get_batch(
-    data: np.memmap,
+    data: np.ndarray,
     batch_size: int,
     seq_len: int,
-    device: torch.device,
+    device: torch.device | str,
 ) -> tuple[torch.Tensor, torch.Tensor]:
-    max_start = len(data) - seq_len - 1
-    if max_start <= 0:
+    num_starts = len(data) - seq_len
+    if num_starts <= 0:
         raise ValueError(f"Dataset too short ({len(data)} tokens) for seq_len={seq_len}.")
-    starts = torch.randint(0, max_start, (batch_size,))
+    starts = torch.randint(0, num_starts, (batch_size,))
     x = np.stack([data[s : s + seq_len] for s in starts.tolist()], axis=0).astype(np.int64, copy=False)
     y = np.stack([data[s + 1 : s + seq_len + 1] for s in starts.tolist()], axis=0).astype(np.int64, copy=False)
     xb = torch.from_numpy(x).to(device=device, non_blocking=True)
@@ -329,6 +329,8 @@ def get_scheduled_lr(args: argparse.Namespace, step: int) -> float:
 
 def main() -> None:
     args = parse_args()
+    if args.resume is not None and not args.resume.is_file():
+        raise FileNotFoundError(f"Resume checkpoint not found: {args.resume}")
     torch.manual_seed(args.seed)
     np.random.seed(args.seed)
     device = choose_device(args.device)
@@ -349,12 +351,12 @@ def main() -> None:
                 f"--vocab-size={args.vocab_size} does not match prepared data "
                 f"vocab_size_recommended={recommended_vocab_size} from {meta_path}."
             )
-    if len(train_data) <= args.seq_len + 1:
+    if len(train_data) <= args.seq_len:
         raise ValueError(
             f"Training dataset is too short ({len(train_data)} tokens) for seq_len={args.seq_len}. "
             "Provide more data or reduce --seq-len."
         )
-    can_run_validation = len(val_data) > args.seq_len + 1
+    can_run_validation = len(val_data) > args.seq_len
     if not can_run_validation:
         print(
             f"Validation dataset is too short ({len(val_data)} tokens) for seq_len={args.seq_len}; "
@@ -373,7 +375,7 @@ def main() -> None:
     optimizer = build_optimizer(args, model)
 
     start_step = 0
-    if args.resume is not None and args.resume.exists():
+    if args.resume is not None:
         start_step = load_checkpoint(args.resume, model, optimizer)
         print(f"Resumed from {args.resume} at step={start_step}")
 

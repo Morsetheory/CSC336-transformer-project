@@ -63,8 +63,9 @@ def _sample_from_logits(
         sorted_probs, sorted_indices = torch.sort(probs, dim=-1, descending=True)
         cumulative_probs = torch.cumsum(sorted_probs, dim=-1)
 
-        keep_sorted = cumulative_probs <= top_p
-        keep_sorted[..., 0] = True
+        # Include the token that first reaches the requested probability mass.
+        keep_sorted = torch.ones_like(sorted_probs, dtype=torch.bool)
+        keep_sorted[..., 1:] = cumulative_probs[..., :-1] < top_p
 
         filtered_sorted_probs = torch.where(keep_sorted, sorted_probs, torch.zeros_like(sorted_probs))
         filtered_probs = torch.zeros_like(probs).scatter(-1, sorted_indices, filtered_sorted_probs)

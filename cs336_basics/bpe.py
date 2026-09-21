@@ -3,11 +3,7 @@ import heapq
 import codecs
 from typing import BinaryIO
 from collections import defaultdict
-import regex as re
-# GPT-style pretokenization regex (tiktoken/GPT-2 style)
-PATTERN = r"""'(?:[sdmt]|ll|ve|re)| ?\p{L}+| ?\p{N}+| ?[^\s\p{L}\p{N}]+|\s+(?!\S)|\s+"""
-# Compile once (faster)
-pretok_re = re.compile(PATTERN)
+from cs336_basics.pretokenization import PATTERN, iter_pretokens, pretok_re
 
 def find_chunk_boundaries(
       file: BinaryIO,
@@ -85,14 +81,6 @@ def iter_pretokens_from_chunk_text(text: str, special_split_re):
               yield m.group(0)
 
 
-def _build_token_re(special_tokens: list[str]):
-      if special_tokens:
-          escaped_tokens = sorted((re.escape(s) for s in special_tokens), key=len, reverse=True)
-          special_alt = "|".join(escaped_tokens)
-          return re.compile(f"(?:{special_alt})|(?:{PATTERN})"), set(special_tokens)
-      return pretok_re, set()
-
-
 def iter_pretokens_from_file(
       input_path,
       special_tokens: list[str],
@@ -102,39 +90,19 @@ def iter_pretokens_from_file(
       Stream pre-tokens from a UTF-8 file without materializing large chunks in memory.
       Special tokens are recognized and skipped so BPE merges never cross them.
       """
-      token_re, special_token_set = _build_token_re(special_tokens)
-      decoder = codecs.getincrementaldecoder("utf-8")(errors="ignore")
-      buffer = ""
+      if chunk_size <= 0:
+          raise ValueError("chunk_size must be positive")
 
-      with open(input_path, "rb") as file:
-          while True:
-              raw = file.read(chunk_size)
-              if not raw:
-                  break
+      def text_chunks():
+          decoder = codecs.getincrementaldecoder("utf-8")(errors="ignore")
+          with open(input_path, "rb") as file:
+              while raw := file.read(chunk_size):
+                  yield decoder.decode(raw)
+              yield decoder.decode(b"", final=True)
 
-              buffer += decoder.decode(raw)
-              consumed = 0
-              partial_start = None
-
-              for match in token_re.finditer(buffer, partial=True):
-                  if match.partial:
-                      partial_start = match.start()
-                      break
-                  token = match.group(0)
-                  if token not in special_token_set:
-                      yield token.encode("utf-8")
-                  consumed = match.end()
-
-              if partial_start is not None:
-                  buffer = buffer[partial_start:]
-              else:
-                  buffer = buffer[consumed:]
-
-          buffer += decoder.decode(b"", final=True)
-          for match in token_re.finditer(buffer):
-              token = match.group(0)
-              if token not in special_token_set:
-                  yield token.encode("utf-8")
+      for token, is_special in iter_pretokens(text_chunks(), special_tokens):
+          if not is_special:
+              yield token.encode("utf-8")
               
 def merge_pair_in_ids(ids, pair, new_id):
       a, b = pair
@@ -250,7 +218,6 @@ def train_bpe(input_path, vocab_size, special_tokens, **kwargs):
             affected_pretoks = list(pair_to_pretoks.get(pair, ()))
         if not affected_pretoks:
             continue
-
         for pretok_index in affected_pretoks:
             current_ids = pretok_ids[pretok_index]
             old_hist = build_pair_hist(current_ids)
@@ -276,6 +243,7 @@ def train_bpe(input_path, vocab_size, special_tokens, **kwargs):
                 if pair_to_pretoks is not None:
                     pair_to_pretoks[new_pair].add(pretok_index)
                 heapq.heappush(pair_heap, (-pair_counts[new_pair], new_pair))
+
     next_special_id = 256 + len(merges)
     for tok in special_tokens:
         vocab[next_special_id] = tok.encode("utf-8")

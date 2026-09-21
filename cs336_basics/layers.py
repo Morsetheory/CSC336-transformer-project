@@ -20,7 +20,7 @@ class Linear(nn.Module):
         self.out_features = out_features
 
         # Weight shape: (out_features, in_features)
-        self.weight = nn.Parameter(torch.empty(out_features, in_features))
+        self.weight = nn.Parameter(torch.empty(out_features, in_features, device=device, dtype=dtype))
         self.bias = None
         self.reset_parameters()
 
@@ -46,17 +46,17 @@ class Embedding(nn.Module):
         self.embedding_dim = embedding_dim
 
         # Weight shape: (num_embeddings, embedding_dim)
-        self.weight = nn.Parameter(torch.empty(num_embeddings, embedding_dim))
+        self.weight = nn.Parameter(torch.empty(num_embeddings, embedding_dim, device=device, dtype=dtype))
         self.reset_parameters()
 
     def reset_parameters(self):
-        # Truncated normal: values drawn near mean, clipped to [a, b]
+        # Standard normal truncated to [-3, 3], independent of vocabulary size.
         nn.init.trunc_normal_(
             self.weight,
             mean=0.0,
-            std= 1,  # often ~ 1/sqrt(num_embeddings)
-            a=- 3 * math.sqrt(2 / (self.num_embeddings + self.embedding_dim)),   # often ~ -2*std
-            b= 3 * math.sqrt(2 / (self.num_embeddings + self.embedding_dim))     # often ~ +2*std
+            std=1.0,
+            a=-3.0,
+            b=3.0,
         )
 
     def forward(self, token_ids: torch.Tensor) -> torch.Tensor:
@@ -70,7 +70,7 @@ class rmsnorm(nn.Module):
         self.d_model = d_model
         self.eps = eps
         # Weight shape: (d_model,)
-        self.weight = nn.Parameter(torch.empty(d_model))
+        self.weight = nn.Parameter(torch.empty(d_model, device=device, dtype=dtype))
         self.reset_parameters()
 
     def reset_parameters(self):
@@ -93,9 +93,9 @@ class SwiGLU(nn.Module):
         super().__init__()
         self.d_model = d_model
         self.d_ff = d_ff
-        self.w1 = nn.Parameter(torch.empty(d_ff, d_model))
-        self.w2 = nn.Parameter(torch.empty(d_model, d_ff))
-        self.w3 = nn.Parameter(torch.empty(d_ff, d_model))
+        self.w1 = nn.Parameter(torch.empty(d_ff, d_model, device=device, dtype=dtype))
+        self.w2 = nn.Parameter(torch.empty(d_model, d_ff, device=device, dtype=dtype))
+        self.w3 = nn.Parameter(torch.empty(d_ff, d_model, device=device, dtype=dtype))
         self.reset_parameters()
     
     def reset_parameters(self):
