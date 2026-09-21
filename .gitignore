@@ -167,3 +167,7 @@ artifacts/
 *.pt
 *.bin
 *.prof
+
+# Local tooling metadata and temporary output
+/anaconda_projects/
+/tmp/

@@ -50,8 +50,8 @@ Tracked fields include:
 - Result: failed before step 1.
 - Failure: `NameError: name 'run_softmax' is not defined` from `cs336_basics/layers.py` inside `run_scaled_dot_product_attention()`.
 - Artifacts:
-  - [summary.json](/Users/shaoguanhua/Desktop/assignment1-basics/artifacts/experiments/tracking-smoke/summary.json)
-  - [metrics.csv](/Users/shaoguanhua/Desktop/assignment1-basics/artifacts/experiments/tracking-smoke/metrics.csv)
+  - [summary.json](results/tracking-smoke/summary.json)
+  - [metrics.csv](results/tracking-smoke/metrics.csv)
 - Outcome: fixed the bug by changing the attention code to call the local `softmax()` helper.
 
 ### 2026-03-11: `tracking-smoke-01`
@@ -82,11 +82,11 @@ Tracked fields include:
 - Best val loss: `5.8700` at step `3`
 - Logged events: `7`
 - Artifacts:
-  - [config.json](/Users/shaoguanhua/Desktop/assignment1-basics/artifacts/experiments/tracking-smoke-01/config.json)
-  - [metrics.csv](/Users/shaoguanhua/Desktop/assignment1-basics/artifacts/experiments/tracking-smoke-01/metrics.csv)
-  - [summary.json](/Users/shaoguanhua/Desktop/assignment1-basics/artifacts/experiments/tracking-smoke-01/summary.json)
-  - [loss_vs_step.svg](/Users/shaoguanhua/Desktop/assignment1-basics/artifacts/experiments/tracking-smoke-01/loss_vs_step.svg)
-  - [loss_vs_wallclock.svg](/Users/shaoguanhua/Desktop/assignment1-basics/artifacts/experiments/tracking-smoke-01/loss_vs_wallclock.svg)
+  - [config.json](results/tracking-smoke-01/config.json)
+  - [metrics.csv](results/tracking-smoke-01/metrics.csv)
+  - [summary.json](results/tracking-smoke-01/summary.json)
+  - [loss_vs_step.svg](results/tracking-smoke-01/loss_vs_step.svg)
+  - [loss_vs_wallclock.svg](results/tracking-smoke-01/loss_vs_wallclock.svg)
 - Notes:
   - The run was intentionally tiny and is only a verification pass for logging.
   - Use the same logging outputs for the assignment’s real hyperparameter experiments.
